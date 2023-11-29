@@ -51,12 +51,30 @@ const pacman = new Pacman({
     }
 })
 
+const keys = {
+    w: {
+        pressed: false
+    },
+    a: {
+        pressed: false
+    },
+    s: {
+        pressed: false
+    },
+    d: {
+        pressed: false
+    }
+}
+let lastKey = ''
+
 const map = [
-    ['-', '-', '-', '-', '-', '-'],
-    ['-', ' ', ' ', ' ', ' ', '-'],
-    ['-', ' ', '-', '-', ' ', '-'],
-    ['-', ' ', ' ', ' ', ' ', '-'],
-    ['-', '-', '-', '-', '-', '-']
+    ['-', '-', '-', '-', '-', '-', '-'],
+    ['-', ' ', ' ', ' ', ' ', ' ', '-'],
+    ['-', ' ', '-', ' ', '-', ' ', '-'],
+    ['-', ' ', ' ', ' ', ' ', ' ', '-'],
+    ['-', ' ', '-', ' ', '-', ' ', '-'],
+    ['-', ' ', ' ', ' ', ' ', ' ', '-'],
+    ['-', '-', '-', '-', '-', '-', '-']
 ]
 
 const boundaries = []
@@ -72,19 +90,113 @@ map.map((row, j) => {
                     }
                 })
             )
-            
+
         }
     })
 })
+
+const playerCollidesWithWall = ({
+    player,
+    wall
+}) => {
+    return (player.position.y - player.radius + player.velocity.y <= wall.position.y + wall.height && player.position.y + player.radius + player.velocity.y >= wall.position.y && player.position.x - player.radius + player.velocity.x <= wall.position.x + wall.width && player.position.x + player.radius + player.velocity.x >= wall.position.x)
+}
+
 
 
 const animate = () => {
     window.requestAnimationFrame(animate)
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    boundaries.map((boundary)=>{
-        boundary.draw()
-    })
+
+    if (keys.w.pressed === true && lastKey === 'w') {
+        for (let i = 0; i < boundaries.length; i++) {
+            const boundary = boundaries[i]
+            if (playerCollidesWithWall({
+                player: {
+                    ...pacman, velocity: {
+                        x: 0,
+                        y: -5
+                    }
+                },
+                wall: boundary
+            })) {
+                pacman.velocity.y = 0
+                break
+            }
+            else {
+                pacman.velocity.y = -5
+            }
+        }
+    }
+    else if (keys.a.pressed === true && lastKey === 'a') {
+        for (let i = 0; i < boundaries.length; i++) {
+            const boundary = boundaries[i]
+            if (playerCollidesWithWall({
+                player: {
+                    ...pacman, velocity: {
+                        x: -5,
+                        y: 0
+                    }
+                },
+                wall: boundary
+            })) {
+                pacman.velocity.x = 0
+                break
+            }
+            else {
+                pacman.velocity.x = -5
+            }
+        }
+    }
+    else if (keys.s.pressed === true && lastKey === 's') {
+        for (let i = 0; i < boundaries.length; i++) {
+            const boundary = boundaries[i]
+            if (playerCollidesWithWall({
+                player: {
+                    ...pacman, velocity: {
+                        x: 0,
+                        y: 5
+                    }
+                },
+                wall: boundary
+            })) {
+                pacman.velocity.y = 0
+                break
+            }
+            else {
+                pacman.velocity.y = 5
+            }
+        }
+    }
+    else if (keys.d.pressed === true && lastKey === 'd') {
+        for (let i = 0; i < boundaries.length; i++) {
+            const boundary = boundaries[i]
+            if (playerCollidesWithWall({
+                player: {
+                    ...pacman, velocity: {
+                        x: 5,
+                        y: 0
+                    }
+                },
+                wall: boundary
+            })) {
+                pacman.velocity.x = 0
+                break
+            }
+            else {
+                pacman.velocity.x = 5
+            }
+        }
+    }
+
     pacman.draw()
+    boundaries.map((boundary) => {
+        boundary.draw()
+        if (playerCollidesWithWall({ player: pacman, wall: boundary })) {
+            pacman.velocity.y = 0
+            pacman.velocity.x = 0
+        }
+    })
     pacman.update()
 }
 animate()
@@ -94,16 +206,36 @@ animate()
 document.addEventListener('keydown', ({ key }) => {
     switch (key) {
         case 'w':
-            pacman.velocity.y = -5
+            keys.w.pressed = true
+            lastKey = 'w'
             break
         case 's':
-            pacman.velocity.y = 5
+            keys.s.pressed = true
+            lastKey = 's'
             break
         case 'a':
-            pacman.velocity.x = -5
+            keys.a.pressed = true
+            lastKey = 'a'
             break
         case 'd':
-            pacman.velocity.x = 5
+            keys.d.pressed = true
+            lastKey = 'd'
+            break
+    }
+})
+document.addEventListener('keyup', ({ key }) => {
+    switch (key) {
+        case 'w':
+            keys.w.pressed = false
+            break
+        case 's':
+            keys.s.pressed = false
+            break
+        case 'a':
+            keys.a.pressed = false
+            break
+        case 'd':
+            keys.d.pressed = false
             break
     }
 })
